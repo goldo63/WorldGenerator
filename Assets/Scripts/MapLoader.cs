@@ -5,12 +5,21 @@ using UnityEngine.Tilemaps;
 
 public class MapLoader : MonoBehaviour
 {
-    public string csvMapName = null;
-    public int MapHeight, MapWidth = 0;
+    [System.Serializable]
+    public class InputMapSettings
+    {
+        public string csvName = "";
+        public bool validate = false;
+        public bool fill = false;
+    }
+
+    public InputMapSettings inputMapSettings;
+
+    public Vector2Int size = new Vector2Int(10, 10);
 
     public TileBase[] tileTypes; // Array to hold different tile types
 
-    public Tilemap tilemap; // Reference to the Tilemap component
+    public Tilemap tilemap;
     private int[,] currentMap;
 
     // Start is called before the first frame update
@@ -18,8 +27,8 @@ public class MapLoader : MonoBehaviour
     {
         int[,] map;
 
-        if (csvMapName != null) map = MapGenerator.GenerateMap(CSVLoader.LoadCSV(csvMapName));
-        else if(MapWidth > 0 && MapHeight > 0) map = MapGenerator.GenerateMap(MapWidth, MapHeight);
+        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = MapGenerator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName));
+        else if(size.x > 0 && size.y > 0) map = MapGenerator.GenerateMap(size.x, size.y);
         else map = MapGenerator.GenerateMap();
 
         LoadMap(map);

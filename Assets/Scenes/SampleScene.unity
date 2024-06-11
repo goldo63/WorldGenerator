@@ -297,7 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe40c7747f24cb48959ce668e2dec9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  csvMapName: 30x30_Test
+  csvMapName: 
   MapHeight: 100
   MapWidth: 100
   tileTypes:
