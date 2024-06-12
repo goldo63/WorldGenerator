@@ -297,9 +297,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe40c7747f24cb48959ce668e2dec9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  csvMapName: 
-  MapHeight: 100
-  MapWidth: 100
+  inputMapSettings:
+    csvName: 
+    validate: 0
+    fill: 0
+  size: {x: 10, y: 10}
   tileTypes:
   - {fileID: 11400000, guid: 3b0fa9bf3b33ae24fb84ba9c041a0fcc, type: 2}
   - {fileID: 11400000, guid: 704b6e6b6f627544498a64a8f4b5bf3c, type: 2}
@@ -307,6 +309,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6f9608b1d94285f4aa3ba0be0165e519, type: 2}
   - {fileID: 11400000, guid: 18a1f58eb7118a44da2d0647d76a05c3, type: 2}
   tilemap: {fileID: 359743467}
+  generator: {fileID: 513468305}
 --- !u!114 &359743469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +324,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   csvName: 30x30_Test
   mapLoader: {fileID: 359743468}
+--- !u!1 &513468303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 513468304}
+  - component: {fileID: 513468305}
+  m_Layer: 0
+  m_Name: MapGen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &513468304
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513468303}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.31467032, y: -0.038525462, z: 0.023226129}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 676367496}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &513468305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513468303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baecaa7bdeef6c04cac041e9c8595478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -470,6 +517,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 359743465}
+  - {fileID: 513468304}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807

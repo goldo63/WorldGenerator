@@ -20,6 +20,8 @@ public class MapLoader : MonoBehaviour
     public TileBase[] tileTypes; // Array to hold different tile types
 
     public Tilemap tilemap;
+    public MapGenerator generator;
+
     private int[,] currentMap;
 
     // Start is called before the first frame update
@@ -27,9 +29,9 @@ public class MapLoader : MonoBehaviour
     {
         int[,] map;
 
-        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = MapGenerator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName));
-        else if(size.x > 0 && size.y > 0) map = MapGenerator.GenerateMap(size.x, size.y);
-        else map = MapGenerator.GenerateMap();
+        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = generator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName));
+        else if(size.x > 0 && size.y > 0) map = generator.GenerateMap(size.x, size.y);
+        else map = generator.GenerateMap();
 
         LoadMap(map);
         currentMap = map;
