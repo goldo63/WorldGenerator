@@ -79,7 +79,7 @@ public class CSVWriter : MonoBehaviour
         mapElement.SetAttribute("version", "1.0");
         mapElement.SetAttribute("tiledversion", "1.8.4"); // Change to the version of Tiled you are using
         mapElement.SetAttribute("orientation", "orthogonal");
-        mapElement.SetAttribute("renderorder", "right-down");
+        mapElement.SetAttribute("renderorder", "right-up");
         mapElement.SetAttribute("width", width.ToString());
         mapElement.SetAttribute("height", height.ToString());
         mapElement.SetAttribute("tilewidth", "32"); // Change tile width as needed
