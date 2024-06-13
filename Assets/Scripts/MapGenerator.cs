@@ -114,6 +114,10 @@ public class MapGenerator : MonoBehaviour
         return false;
     }
 
+    private List<Vector2Int> GetNeigbours(int x, int y) {
+        return null;
+    }
+
     //==========DOMAIN MANAGEMENT METHODS==========
     private List<int>[,] SaveDomains() //copies the new domain
     {
