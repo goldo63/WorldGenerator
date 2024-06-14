@@ -82,12 +82,40 @@ public class MapGenerator : MonoBehaviour
     //==========GENERATING METHODS==========
     private bool Backtrack(int x, int y)
     {
+        if (x == width) { x = 0; y++; }
+        if (y == height) { return true; } //checks if all tiles have been checked
+
+        List<int> domain = domains[x, y]; //gets all the remaining domain options from the selected Variable
+
+        foreach (int tile in domain)
+        {
+            if (isTileValidate(x, y, tile)) //checks if the chosen domain option fits the current constraints
+            {
+                map[x, y] = tile;
+                List<int>[,] savedDomains = SaveDomains();
+
+                if (ForwardCheck(x, y, tile))  //checks if the neighbours have any options left after domain option is chosen
+                {
+                    if (Backtrack(x + 1, y)) //checks the next tile.
+                    {
+                        return true;
+                    }
+                }
+
+                RestoreDomains(savedDomains); //restores the domain if the chosen domain option leaves neigbours without options
+                map[x, y] = 0;  // Unassign tile
+            }
+        }
         return false;
     }
 
     private bool ForwardCheck(int x, int y, int tile)
     {
         return false;
+    }
+
+    private List<Vector2Int> GetNeigbours(int x, int y) {
+        return null;
     }
 
     //==========DOMAIN MANAGEMENT METHODS==========
@@ -116,7 +144,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     //==========VALIDATE METHODS==========
-    private bool isTileValidate()
+    private bool isTileValidate(int x, int y, int domainchoice)
     {
 
         return false;
