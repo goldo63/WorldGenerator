@@ -2,14 +2,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class MapGenerator : MonoBehaviour
 {
-    private int width, height;
+    private System.Random random = new System.Random();
 
+    //mistakes
+    private int mistakeThreshold;
+    public int mistakeTimeout = 5000;
+    private int mistakeCount = 0;
+    private bool ThresholdReached;
+
+    //map vars
+    private int width, height;
     private int[,] map;
     private List<int>[,] domains;
 
+    //tiles
     private int[] tileTypes = { 0, 1, 2, 3, 4 }; // DOMAIN OPTIONS
 
     // Constraints for tile placement
@@ -32,7 +42,8 @@ public class MapGenerator : MonoBehaviour
 
     };
 
-    private System.Random random = new System.Random();
+    //generation settings
+    public int lakeCount = 0;
 
     //==========INITIALISATION METHODS==========
     public int[,] GenerateMap(int inWidth = 10, int inHeight = 10)
@@ -41,6 +52,8 @@ public class MapGenerator : MonoBehaviour
 
         map = new int[width, height];
         domains = new List<int>[width, height];
+
+        lakeCount = (width * height) / 100 * 10 / 20;
 
         for (int x = 0; x < width; x++)
         {
@@ -57,16 +70,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        if (Backtrack(0, 0))
-        {
-            Debug.Log("Map generation successful!");
-            return map;
-        }
-        else
-        {
-            Debug.LogError("Map generation failed.");
-            return null;
-        }
+        return LaunchGenerator();
     }
 
     public int[,] GenerateMap(int[,] inputMap, bool fill, bool validate)
@@ -74,6 +78,8 @@ public class MapGenerator : MonoBehaviour
         map = inputMap;
         width = inputMap.GetLength(0); height = inputMap.GetLength(1);
         domains = new List<int>[width, height];
+
+        lakeCount = (width * height) / 100 * 10 / 20;
 
         for (int x = 0; x < width; x++)
         {
@@ -96,16 +102,7 @@ public class MapGenerator : MonoBehaviour
 
         if (fill)
         {
-            if (Backtrack(0, 0))
-            {
-                Debug.Log("Map generation successful!");
-                return map;
-            }
-            else
-            {
-                Debug.LogError("Map generation failed.");
-                return null;
-            }
+            return LaunchGenerator();
         }
         else
         {
@@ -114,7 +111,51 @@ public class MapGenerator : MonoBehaviour
         
     }
 
+    private int[,] LaunchGenerator()
+    {
+
+        mistakeThreshold = mistakeTimeout;
+        ThresholdReached = false;
+        mistakeCount = 0;
+
+        if (PreGenerate())
+        {
+            Debug.Log("Map generation successful!");
+            return map;
+        }
+        else
+        {
+            Debug.LogError("Map generation failed.");
+            return null;
+        }
+    }
+
+    private bool PreGenerate()
+    {
+        lakeCount = 2;
+        while (lakeCount > 0)
+        {
+            int x = random.Next(0, width -1);
+            int y = random.Next(0, height -1);
+            GenerateWater(x, y, 0);
+            lakeCount--;
+        }
+
+        foreach(List<int> domain in domains) if (domain.Count != 1 && domain.Contains(4)) domain.Remove(4);
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                if (domains[x, y].Count == 1 && domains[x, y].Contains(4)) map[x, y] = domains[x, y][0];
+
+            }
+        }
+        debugExportMap();
+        return Backtrack(0, 0);
+    }
+
     //==========GENERATING METHODS==========
+
     private bool Backtrack(int x, int y)
     {
         // Move to the next row if we have reached the end of the current row
@@ -122,8 +163,7 @@ public class MapGenerator : MonoBehaviour
         // Return true if we have reached the end of the grid
         if (y == height) { return true; }
 
-
-        if (map[x, y] == -1)
+        if (map[x, y] == -1 && map[x, y] != 4)
         {
             // Get all the remaining domain options for the current tile
             List<int> domain = new List<int>(domains[x, y]);
@@ -135,7 +175,7 @@ public class MapGenerator : MonoBehaviour
             foreach (int tile in domain)
             {
                 // Check if the chosen tile type is consistent with the current constraints
-                if (isTileValidate(x, y, tile))
+                if (tile != 4 && isTileValidate(x, y, tile))
                 {
                     // Assign the chosen tile type to the current tile
                     map[x, y] = tile;
@@ -152,6 +192,10 @@ public class MapGenerator : MonoBehaviour
                         }
                     }
 
+                    savedDomains[x, y].Remove(tile);
+                    if(checkTimeOut()) return false; //timeout
+                    mistakeCount++;
+
                     // Restore the domains if the forward check or further backtracking fails
                     RestoreDomains(savedDomains);
                     // Unassign the tile
@@ -159,7 +203,9 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-        else {
+        else
+        {
+            // Move to the next tile
             if (Backtrack(x + 1, y))
             {
                 return true;
@@ -167,21 +213,8 @@ public class MapGenerator : MonoBehaviour
         }
         // Return false if no valid assignment is found for the current tile
         return false;
-
     }
 
-    // Utility method to shuffle a list
-    private void Shuffle<T>(List<T> list)
-    {
-        int n = list.Count;
-        for (int i = 0; i < n; i++)
-        {
-            int r = i + random.Next(n - i);
-            T temp = list[r];
-            list[r] = list[i];
-            list[i] = temp;
-        }
-    }
 
     private bool ForwardCheck(int x, int y, int tile)
     {
@@ -228,6 +261,58 @@ public class MapGenerator : MonoBehaviour
         }
         // Return true indicating that the forward check was successful
         return true;
+    }
+
+    private int GenerateWater(int x, int y, int waterCount)
+    {
+        // Mark the current tile as water
+        map[x, y] = 4;
+        domains[x, y].Clear(); // Remove all other options, only water remains
+        waterCount++;
+
+        List<Vector2Int> neighbors = GetNeighbors(x, y);
+        List<Vector2Int> validNeighbors = new List<Vector2Int>();
+
+        // Remove current tile from neighbors
+        neighbors.RemoveAll(n => n.x == x && n.y == y);
+
+        foreach (Vector2Int neighbor in neighbors)
+        {
+            List<int> neighborDomain = domains[neighbor.x, neighbor.y];
+
+            // If neighbor still has water as an option, it's a valid neighbor
+            if (neighborDomain.Contains(4))
+                validNeighbors.Add(neighbor);
+
+            // Remove all non-water options from neighbor domain
+            neighborDomain.RemoveAll(t => t != 4);
+        }
+
+        Shuffle(validNeighbors);
+
+        foreach (Vector2Int neighbor in validNeighbors)
+        {
+            if (waterCount > 10)
+                return waterCount; // Exit condition if enough water tiles generated
+
+            waterCount = GenerateWater(neighbor.x, neighbor.y, waterCount);
+        }
+
+        return waterCount;
+    }
+
+
+    // Utility method to shuffle a list
+    private void Shuffle<T>(List<T> list)
+    {
+        int n = list.Count;
+        for (int i = 0; i < n; i++)
+        {
+            int r = i + random.Next(n - i);
+            T temp = list[r];
+            list[r] = list[i];
+            list[i] = temp;
+        }
     }
 
     private List<Vector2Int> GetNeighbors(int x, int y)
@@ -301,5 +386,28 @@ public class MapGenerator : MonoBehaviour
     {
         // Implement any additional map-wide validation if needed
         return true;
+    }
+
+    private bool checkTimeOut()
+    {
+        if (mistakeThreshold <= 0)
+        {
+            if (!ThresholdReached)
+            {
+                Debug.LogError("Backtrack process timed out with " + mistakeCount + " mistakes!");
+                debugExportMap("TIMEOUT_MAP");
+                ThresholdReached = true;
+            }
+            
+            return true; // Timeout occurred
+        }
+        mistakeThreshold--;
+        return false;
+    }
+
+    private void debugExportMap(string name = "DEBUG_MAP")
+    {
+        CSVWriter writer = new CSVWriter();
+        writer.SaveTMX(map, name);
     }
 }

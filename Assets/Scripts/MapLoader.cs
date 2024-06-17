@@ -23,7 +23,7 @@ public class MapLoader : MonoBehaviour
     public MapGenerator generator;
 
     private int[,] currentMap;
-    private int iterations = 20;
+    private int iterations = 10;
 
     // Start is called before the first frame update
     void Start()
@@ -48,7 +48,7 @@ public class MapLoader : MonoBehaviour
             Start();
         } else if(map == null)
         {
-                return;
+            return;
         }
 
         int width = map.GetLength(0);
