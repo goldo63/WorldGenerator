@@ -11,6 +11,22 @@ public class MapGenerator : MonoBehaviour
 
     private int[] tileTypes = { 0, 1, 2, 3, 4 }; //DOMAIN OPTIONS
 
+
+    // Constraints for tile placement
+    private Dictionary<int, HashSet<int>> constraints = new Dictionary<int, HashSet<int>>
+    {
+        //sand
+        { 0, new HashSet<int> { 1 } },
+        //water
+        { 1, new HashSet<int> { 0, 3, 4 } },
+        //grass
+        { 2, new HashSet<int> { 4, 3 } },
+        //stone
+        { 3, new HashSet<int> { 1, 2, 4 } },
+        //cactus
+        { 4, new HashSet<int> { 4, 2, 3, 1 } }
+    };
+
     //==========INITIALISATION METHODS==========
     public int[,] GenerateMap(int inWidth = 10, int inHeight = 10)
     {
@@ -114,10 +130,6 @@ public class MapGenerator : MonoBehaviour
         return false;
     }
 
-    private List<Vector2Int> GetNeigbours(int x, int y) {
-        return null;
-    }
-
     //==========DOMAIN MANAGEMENT METHODS==========
     private List<int>[,] SaveDomains() //copies the new domain
     {
@@ -146,8 +158,28 @@ public class MapGenerator : MonoBehaviour
     //==========VALIDATE METHODS==========
     private bool isTileValidate(int x, int y, int domainchoice)
     {
+        List<Vector2Int> neighbors = GetNeighbors(x, y);
+        foreach (Vector2Int neighbor in neighbors)
+        {
+            // Check constraints based on neighboring cells
+            if (map[neighbor.x, neighbor.y] != 0 && constraints[domainchoice].Contains(map[neighbor.x, neighbor.y]))
+            {
+                return false; // Assignment violates constraints
+            }
+        }
+        return true; // Assignment is consistent
 
-        return false;
+    }
+
+    // Get neighbors of a cell
+    List<Vector2Int> GetNeighbors(int x, int y)
+    {
+        List<Vector2Int> neighbors = new List<Vector2Int>();
+        if (x > 0) neighbors.Add(new Vector2Int(x - 1, y));
+        if (x < width - 1) neighbors.Add(new Vector2Int(x + 1, y));
+        if (y > 0) neighbors.Add(new Vector2Int(x, y - 1));
+        if (y < height - 1) neighbors.Add(new Vector2Int(x, y + 1));
+        return neighbors;
     }
 
     private bool isMapValid()
