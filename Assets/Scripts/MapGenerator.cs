@@ -10,7 +10,7 @@ public class MapGenerator : MonoBehaviour
 
     //mistakes
     private int mistakeThreshold;
-    public int mistakeTimeout = 5000;
+    public int mistakeTimeout = 50000;
     private int mistakeCount = 0;
     private bool ThresholdReached;
 
@@ -52,8 +52,7 @@ public class MapGenerator : MonoBehaviour
 
         map = new int[width, height];
         domains = new List<int>[width, height];
-
-        lakeCount = (width * height) / 100 * 10 / 20;
+        ResetGenerator();
 
         for (int x = 0; x < width; x++)
         {
@@ -70,7 +69,16 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        return LaunchGenerator();
+        if (PreGenerate())
+        {
+            Debug.Log("Map generation successful!");
+            return map;
+        }
+        else
+        {
+            Debug.LogError("Map generation failed.");
+            return null;
+        }
     }
 
     public int[,] GenerateMap(int[,] inputMap, bool fill, bool validate)
@@ -79,7 +87,7 @@ public class MapGenerator : MonoBehaviour
         width = inputMap.GetLength(0); height = inputMap.GetLength(1);
         domains = new List<int>[width, height];
 
-        lakeCount = (width * height) / 100 * 10 / 20;
+        ResetGenerator();
 
         for (int x = 0; x < width; x++)
         {
@@ -102,37 +110,34 @@ public class MapGenerator : MonoBehaviour
 
         if (fill)
         {
-            return LaunchGenerator();
+            if (Backtrack(0,0))
+            {
+                Debug.Log("Map generation successful!");
+                return map;
+            }
+            else
+            {
+                Debug.LogError("Map generation failed.");
+                return null;
+            }
         }
         else
         {
             return map;
         }
-        
     }
 
-    private int[,] LaunchGenerator()
+    private void ResetGenerator()
     {
-
+        lakeCount = (width * height) / 100 * 5 / 20;
         mistakeThreshold = mistakeTimeout;
         ThresholdReached = false;
         mistakeCount = 0;
-
-        if (PreGenerate())
-        {
-            Debug.Log("Map generation successful!");
-            return map;
-        }
-        else
-        {
-            Debug.LogError("Map generation failed.");
-            return null;
-        }
     }
 
     private bool PreGenerate()
     {
-        lakeCount = 2;
+        Debug.Log("LakeCount: " + lakeCount);
         while (lakeCount > 0)
         {
             int x = random.Next(0, width -1);
@@ -155,13 +160,10 @@ public class MapGenerator : MonoBehaviour
     }
 
     //==========GENERATING METHODS==========
-
     private bool Backtrack(int x, int y)
     {
-        // Move to the next row if we have reached the end of the current row
         if (x == width) { x = 0; y++; }
-        // Return true if we have reached the end of the grid
-        if (y == height) { return true; }
+        if (y == height) { return true; }// Return true if we have reached the end of the grid
 
         if (map[x, y] == -1 && map[x, y] != 4)
         {
@@ -214,7 +216,6 @@ public class MapGenerator : MonoBehaviour
         // Return false if no valid assignment is found for the current tile
         return false;
     }
-
 
     private bool ForwardCheck(int x, int y, int tile)
     {
@@ -301,7 +302,7 @@ public class MapGenerator : MonoBehaviour
         return waterCount;
     }
 
-
+    //==========HELPER METHODS==========
     // Utility method to shuffle a list
     private void Shuffle<T>(List<T> list)
     {
@@ -388,6 +389,8 @@ public class MapGenerator : MonoBehaviour
         return true;
     }
 
+
+    //==========DEBUG METHODS==========
     private bool checkTimeOut()
     {
         if (mistakeThreshold <= 0)
