@@ -116,18 +116,36 @@ public class MapGenerator : MonoBehaviour
                     {
                         return true;
                     }
-                }
+                } 
 
-                RestoreDomains(savedDomains); //restores the domain if the chosen domain option leaves neigbours without options
+                RestoreDomains(savedDomains); //restores the domain if the chosen domain option leaves neighbor without options
                 map[x, y] = 0;  // Unassign tile
             }
         }
         return false;
     }
 
-    private bool ForwardCheck(int x, int y, int tile)
+    private bool ForwardCheck(int x, int y, int tile) //checks if the domain option leaves options for the neighbors
     {
-        return false;
+        List<Vector2Int> neighbors = GetNeighbors(x, y); //gets neighbor of current tiles
+        foreach (Vector2Int neighbor in neighbors)
+        {
+            domains[neighbor.x, neighbor.y].Remove(tile); //removes chosen domain option from neighbor
+            if (domains[neighbor.x, neighbor.y].Count == 0) //checks if there are domain options left from neighbor
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private List<Vector2Int> GetNeighbors(int x, int y) {
+        List<Vector2Int> neighbors = new List<Vector2Int>();
+        if (x > 0) neighbors.Add(new Vector2Int(x - 1, y)); //gets left tile
+        if (x < width - 1) neighbors.Add(new Vector2Int(x + 1, y)); // gets right tile
+        if (y > 0) neighbors.Add(new Vector2Int(x, y - 1)); //gets top tile
+        if (y < height - 1) neighbors.Add(new Vector2Int(x, y + 1)); // get bottom tile
+        return neighbors;
     }
 
     //==========DOMAIN MANAGEMENT METHODS==========
