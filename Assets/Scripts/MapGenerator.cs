@@ -190,15 +190,15 @@ public class MapGenerator : MonoBehaviour
     }
 
     // Get neighbors of a cell
-    List<Vector2Int> GetNeighbors(int x, int y)
-    {
-        List<Vector2Int> neighbors = new List<Vector2Int>();
-        if (x > 0) neighbors.Add(new Vector2Int(x - 1, y));
-        if (x < width - 1) neighbors.Add(new Vector2Int(x + 1, y));
-        if (y > 0) neighbors.Add(new Vector2Int(x, y - 1));
-        if (y < height - 1) neighbors.Add(new Vector2Int(x, y + 1));
-        return neighbors;
-    }
+    //List<Vector2Int> GetNeighbors(int x, int y)
+    //{
+    //    List<Vector2Int> neighbors = new List<Vector2Int>();
+    //    if (x > 0) neighbors.Add(new Vector2Int(x - 1, y));
+    //    if (x < width - 1) neighbors.Add(new Vector2Int(x + 1, y));
+    //    if (y > 0) neighbors.Add(new Vector2Int(x, y - 1));
+    //    if (y < height - 1) neighbors.Add(new Vector2Int(x, y + 1));
+    //    return neighbors;
+    //}
 
     private bool isMapValid()
     {
