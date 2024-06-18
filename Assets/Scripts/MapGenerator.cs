@@ -183,7 +183,7 @@ public class MapGenerator : MonoBehaviour
             foreach (int tile in domain)
             {
                 // Check if the chosen tile type is consistent with the current constraints
-                if (tile != 4 && isTileValidate(x, y, tile))
+                if (tile != 4 && isTileValidate(x, y, tile, map))
                 {
                     // Assign the chosen tile type to the current tile
                     map[x, y] = tile;
@@ -375,13 +375,13 @@ public class MapGenerator : MonoBehaviour
     }
 
     //==========VALIDATE METHODS==========
-    private bool isTileValidate(int x, int y, int domainchoice)
+    private bool isTileValidate(int x, int y, int domainchoice, int[,] mapToCheck)
     {
         List<Vector2Int> neighbors = GetNeighbors(x, y);
         foreach (Vector2Int neighbor in neighbors)
         {
             // Check constraints based on neighboring cells
-            if (map[neighbor.x, neighbor.y] != -1 && constraints[domainchoice].Contains(map[neighbor.x, neighbor.y]))
+            if (mapToCheck[neighbor.x, neighbor.y] != -1 && constraints[domainchoice].Contains(mapToCheck[neighbor.x, neighbor.y]))
             {
                 return false; // Assignment violates constraints
             }
@@ -458,7 +458,7 @@ public class MapGenerator : MonoBehaviour
                         }
                     }
 
-                    if (!isTileValidate(x, y, mostFrequentTile)) smoothedMap[x, y] = map[x, y];
+                    if (!isTileValidate(x, y, mostFrequentTile, smoothedMap)) smoothedMap[x, y] = map[x, y];
                     // Assign the most frequent tile type to the current position
                     smoothedMap[x, y] = mostFrequentTile;
                 }
