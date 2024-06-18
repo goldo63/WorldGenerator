@@ -298,10 +298,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputMapSettings:
-    csvName: 
+    csvName: EXTRACT_30x30_Test
     validate: 0
-    fill: 0
-  size: {x: 10, y: 10}
+    fill: 1
+  size: {x: 35, y: 35}
   tileTypes:
   - {fileID: 11400000, guid: 3b0fa9bf3b33ae24fb84ba9c041a0fcc, type: 2}
   - {fileID: 11400000, guid: 704b6e6b6f627544498a64a8f4b5bf3c, type: 2}
@@ -368,6 +368,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baecaa7bdeef6c04cac041e9c8595478, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mistakeTimeout: 5000
+  lakeCount: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -513,7 +515,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 359743465}
