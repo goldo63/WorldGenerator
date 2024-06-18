@@ -300,8 +300,11 @@ MonoBehaviour:
   inputMapSettings:
     csvName: 
     validate: 0
-    fill: 1
-  size: {x: 35, y: 35}
+    fill: 0
+  smoothMapSettings:
+    smoothMap: 1
+    smoothIteration: 3
+  size: {x: 50, y: 50}
   tileTypes:
   - {fileID: 11400000, guid: 3b0fa9bf3b33ae24fb84ba9c041a0fcc, type: 2}
   - {fileID: 11400000, guid: 704b6e6b6f627544498a64a8f4b5bf3c, type: 2}

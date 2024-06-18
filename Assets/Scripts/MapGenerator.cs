@@ -2,11 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static MapLoader;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class MapGenerator : MonoBehaviour
 {
     private System.Random random = new System.Random();
+
+    private SmoothSettings smoothSettings = new SmoothSettings();
 
     //mistakes
     private int mistakeThreshold;
@@ -46,7 +49,7 @@ public class MapGenerator : MonoBehaviour
     public int lakeCount = 0;
 
     //==========INITIALISATION METHODS==========
-    public int[,] GenerateMap(int inWidth = 10, int inHeight = 10)
+    public int[,] GenerateMap(SmoothSettings smoothMap, int inWidth = 10, int inHeight = 10)
     {
         width = inWidth; height = inHeight;
 
@@ -72,6 +75,7 @@ public class MapGenerator : MonoBehaviour
         if (PreGenerate())
         {
             Debug.Log("Map generation successful!");
+            if (smoothMap.smoothMap) SmoothMap();
             return map;
         }
         else
@@ -81,7 +85,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    public int[,] GenerateMap(int[,] inputMap, bool fill, bool validate)
+    public int[,] GenerateMap(SmoothSettings smoothMap, int[,] inputMap, bool fill, bool validate)
     {
         map = inputMap;
         width = inputMap.GetLength(0); height = inputMap.GetLength(1);
@@ -113,6 +117,7 @@ public class MapGenerator : MonoBehaviour
             if (Backtrack(0,0))
             {
                 Debug.Log("Map generation successful!");
+                if (smoothMap.smoothMap) SmoothMap();
                 return map;
             }
             else
@@ -123,6 +128,7 @@ public class MapGenerator : MonoBehaviour
         }
         else
         {
+            if (smoothMap.smoothMap) SmoothMap();
             return map;
         }
     }
@@ -177,7 +183,7 @@ public class MapGenerator : MonoBehaviour
             foreach (int tile in domain)
             {
                 // Check if the chosen tile type is consistent with the current constraints
-                if (tile != 4 && isTileValidate(x, y, tile))
+                if (tile != 4 && isTileValidate(x, y, tile, map))
                 {
                     // Assign the chosen tile type to the current tile
                     map[x, y] = tile;
@@ -316,21 +322,21 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private List<Vector2Int> GetNeighbors(int x, int y)
+    private List<Vector2Int> GetNeighbors(int x, int y, int depth = 1)
     {
         List<Vector2Int> neighbors = new List<Vector2Int>();
 
-        // Loop through the 3x3 grid centered on (x, y)
-        for (int dx = -1; dx <= 1; dx++)
+        // Loop through the (2 * depth + 1) x (2 * depth + 1) grid centered on (x, y)
+        for (int dx = -depth; dx <= depth; dx++)
         {
-            for (int dy = -1; dy <= 1; dy++)
+            for (int dy = -depth; dy <= depth; dy++)
             {
+                int nx = x + dx;
+                int ny = y + dy;
+
                 // Skip the center tile itself
                 if (dx == 0 && dy == 0)
                     continue;
-
-                int nx = x + dx;
-                int ny = y + dy;
 
                 // Check if the neighbor is within the bounds of the map
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height)
@@ -342,6 +348,7 @@ public class MapGenerator : MonoBehaviour
 
         return neighbors;
     }
+
 
     //==========DOMAIN MANAGEMENT METHODS==========
     private List<int>[,] SaveDomains() //copies the new domain
@@ -369,13 +376,19 @@ public class MapGenerator : MonoBehaviour
     }
 
     //==========VALIDATE METHODS==========
-    private bool isTileValidate(int x, int y, int domainchoice)
+    private bool isTileValidate(int x, int y, int domainchoice, int[,] mapToCheck)
     {
         List<Vector2Int> neighbors = GetNeighbors(x, y);
+        if (domainchoice == 0 || domainchoice == 2)
+        {
+            List<Vector2Int> waterNeighbors = GetNeighbors(x, y, 3);
+            foreach (Vector2Int neighbor in waterNeighbors) if (map[neighbor.x, neighbor.y] == 4) return false;
+        }
+
         foreach (Vector2Int neighbor in neighbors)
         {
             // Check constraints based on neighboring cells
-            if (map[neighbor.x, neighbor.y] != -1 && constraints[domainchoice].Contains(map[neighbor.x, neighbor.y]))
+            if (mapToCheck[neighbor.x, neighbor.y] != -1 && constraints[domainchoice].Contains(mapToCheck[neighbor.x, neighbor.y]))
             {
                 return false; // Assignment violates constraints
             }
@@ -432,5 +445,54 @@ public class MapGenerator : MonoBehaviour
     {
         CSVWriter writer = new CSVWriter();
         writer.SaveTMX(map, name);
+    }
+
+    private void SmoothMap()
+    {
+        Debug.Log("Start smoothing "+ smoothSettings.smoothIteration + " times");
+        for (int i = 0; i < smoothSettings.smoothIteration; i++) // Number of iterations for smoothing
+        {
+            int[,] smoothedMap = new int[width, height];
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (map[x, y] == 4 || map[x, y] == 0) {
+                        smoothedMap[x, y] = map[x, y];
+                        continue;
+                    };
+
+                    int[] tileCounts = new int[tileTypes.Length];
+                    List<Vector2Int> neighbors = GetNeighbors(x, y);
+
+                    // Count the number of each tile type in the neighbors
+                    foreach (Vector2Int neighbor in neighbors)
+                    {
+                        int neighborTile = map[neighbor.x, neighbor.y];
+                        tileCounts[neighborTile]++;
+                    }
+
+                    // Find the most frequent tile type among the neighbors
+                    int maxCount = -1;
+                    int mostFrequentTile = map[x, y]; // Default to current tile type
+
+                    for (int t = 0; t < tileTypes.Length; t++)
+                    {
+                        if (tileCounts[t] > maxCount)
+                        {
+                            maxCount = tileCounts[t];
+                            mostFrequentTile = t;
+                        }
+                    }
+
+                    if (!isTileValidate(x, y, mostFrequentTile, smoothedMap)) smoothedMap[x, y] = map[x, y];
+                    // Assign the most frequent tile type to the current position
+                    smoothedMap[x, y] = mostFrequentTile;
+                }
+            }
+
+            // Update the map with the smoothed version
+            map = smoothedMap;
+        }
     }
 }

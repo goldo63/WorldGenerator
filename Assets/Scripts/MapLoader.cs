@@ -15,6 +15,14 @@ public class MapLoader : MonoBehaviour
 
     public InputMapSettings inputMapSettings;
 
+    [System.Serializable]
+    public class SmoothSettings
+    {
+        public bool smoothMap = true;
+        public int smoothIteration = 1;
+    }
+    public SmoothSettings smoothMapSettings;
+
     public Vector2Int size = new Vector2Int(10, 10);
 
     public TileBase[] tileTypes; // Array to hold different tile types
@@ -30,9 +38,9 @@ public class MapLoader : MonoBehaviour
     {
         int[,] map;
 
-        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = generator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName), inputMapSettings.fill, inputMapSettings.validate);
-        else if(size.x > 0 && size.y > 0) map = generator.GenerateMap(size.x, size.y);
-        else map = generator.GenerateMap();
+        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = generator.GenerateMap(smoothMapSettings, CSVLoader.LoadCSV(inputMapSettings.csvName), inputMapSettings.fill, inputMapSettings.validate);
+        else if(size.x > 0 && size.y > 0) map = generator.GenerateMap(smoothMapSettings, size.x, size.y);
+        else map = generator.GenerateMap(smoothMapSettings);
 
         LoadMap(map);
         currentMap = map;
