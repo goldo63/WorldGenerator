@@ -385,7 +385,27 @@ public class MapGenerator : MonoBehaviour
 
     private bool isMapValid()
     {
-        // Implement any additional map-wide validation if needed
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                int tileType = map[x, y];
+
+                // Skip if the tile is unassigned
+                if (tileType == -1)
+                    continue;
+
+                // Check if the current tile is valid
+                if (!isTileValidate(x, y, tileType))
+                {
+                    Debug.LogError($"Invalid map: Tile at ({x},{y}) with type {tileType} is invalid.");
+                    return false;
+                }
+            }
+        }
+        // If all tiles are valid, return true
+        Debug.Log("Map valid!");
         return true;
     }
 
