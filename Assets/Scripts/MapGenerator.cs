@@ -110,7 +110,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        if (validate) isMapValid();
+        if (validate) isMapValid(map);
 
         if (fill)
         {
@@ -396,7 +396,7 @@ public class MapGenerator : MonoBehaviour
         return true; // Assignment is consistent
     }
 
-    private bool isMapValid()
+    private bool isMapValid(int[,] mapToCheck)
     {
 
         for (int x = 0; x < width; x++)
@@ -410,7 +410,7 @@ public class MapGenerator : MonoBehaviour
                     continue;
 
                 // Check if the current tile is valid
-                if (!isTileValidate(x, y, tileType))
+                if (!isTileValidate(x, y, tileType, mapToCheck))
                 {
                     Debug.LogError($"Invalid map: Tile at ({x},{y}) with type {tileType} is invalid.");
                     return false;
