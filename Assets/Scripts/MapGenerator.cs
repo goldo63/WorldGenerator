@@ -2,11 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static MapLoader;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class MapGenerator : MonoBehaviour
 {
     private System.Random random = new System.Random();
+
+    private SmoothSettings smoothSettings = new SmoothSettings();
 
     //mistakes
     private int mistakeThreshold;
@@ -46,7 +49,7 @@ public class MapGenerator : MonoBehaviour
     public int lakeCount = 0;
 
     //==========INITIALISATION METHODS==========
-    public int[,] GenerateMap(int inWidth = 10, int inHeight = 10)
+    public int[,] GenerateMap(SmoothSettings smoothMap, int inWidth = 10, int inHeight = 10)
     {
         width = inWidth; height = inHeight;
 
@@ -72,6 +75,7 @@ public class MapGenerator : MonoBehaviour
         if (PreGenerate())
         {
             Debug.Log("Map generation successful!");
+            if (smoothMap.smoothMap) SmoothMap();
             return map;
         }
         else
@@ -81,7 +85,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    public int[,] GenerateMap(int[,] inputMap, bool fill, bool validate)
+    public int[,] GenerateMap(SmoothSettings smoothMap, int[,] inputMap, bool fill, bool validate)
     {
         map = inputMap;
         width = inputMap.GetLength(0); height = inputMap.GetLength(1);
@@ -113,6 +117,7 @@ public class MapGenerator : MonoBehaviour
             if (Backtrack(0,0))
             {
                 Debug.Log("Map generation successful!");
+                if (smoothMap.smoothMap) SmoothMap();
                 return map;
             }
             else
@@ -123,6 +128,7 @@ public class MapGenerator : MonoBehaviour
         }
         else
         {
+            if (smoothMap.smoothMap) SmoothMap();
             return map;
         }
     }
@@ -412,5 +418,54 @@ public class MapGenerator : MonoBehaviour
     {
         CSVWriter writer = new CSVWriter();
         writer.SaveTMX(map, name);
+    }
+
+    private void SmoothMap()
+    {
+        Debug.Log("Start smoothing "+ smoothSettings.smoothIteration + " times");
+        for (int i = 0; i < smoothSettings.smoothIteration; i++) // Number of iterations for smoothing
+        {
+            int[,] smoothedMap = new int[width, height];
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (map[x, y] == 4 || map[x, y] == 0) {
+                        smoothedMap[x, y] = map[x, y];
+                        continue;
+                    };
+
+                    int[] tileCounts = new int[tileTypes.Length];
+                    List<Vector2Int> neighbors = GetNeighbors(x, y);
+
+                    // Count the number of each tile type in the neighbors
+                    foreach (Vector2Int neighbor in neighbors)
+                    {
+                        int neighborTile = map[neighbor.x, neighbor.y];
+                        tileCounts[neighborTile]++;
+                    }
+
+                    // Find the most frequent tile type among the neighbors
+                    int maxCount = -1;
+                    int mostFrequentTile = map[x, y]; // Default to current tile type
+
+                    for (int t = 0; t < tileTypes.Length; t++)
+                    {
+                        if (tileCounts[t] > maxCount)
+                        {
+                            maxCount = tileCounts[t];
+                            mostFrequentTile = t;
+                        }
+                    }
+
+
+                    // Assign the most frequent tile type to the current position
+                    smoothedMap[x, y] = mostFrequentTile;
+                }
+            }
+
+            // Update the map with the smoothed version
+            map = smoothedMap;
+        }
     }
 }
