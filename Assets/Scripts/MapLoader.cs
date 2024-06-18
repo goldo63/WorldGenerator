@@ -23,13 +23,14 @@ public class MapLoader : MonoBehaviour
     public MapGenerator generator;
 
     private int[,] currentMap;
+    private int iterations = 10;
 
     // Start is called before the first frame update
     void Start()
     {
         int[,] map;
 
-        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = generator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName));
+        if (inputMapSettings.csvName != null && inputMapSettings.csvName != "") map = generator.GenerateMap(CSVLoader.LoadCSV(inputMapSettings.csvName), inputMapSettings.fill, inputMapSettings.validate);
         else if(size.x > 0 && size.y > 0) map = generator.GenerateMap(size.x, size.y);
         else map = generator.GenerateMap();
 
@@ -40,6 +41,16 @@ public class MapLoader : MonoBehaviour
     // Update is called once per frame
     private void LoadMap(int[,] map)
     {
+        if (map == null && iterations > 0) 
+        {
+            iterations--;
+            Debug.Log("Iterations remaining: "+ iterations);
+            Start();
+        } else if(map == null)
+        {
+            return;
+        }
+
         int width = map.GetLength(0);
         int height = map.GetLength(1);
 
