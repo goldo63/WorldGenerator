@@ -322,21 +322,21 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private List<Vector2Int> GetNeighbors(int x, int y)
+    private List<Vector2Int> GetNeighbors(int x, int y, int depth = 1)
     {
         List<Vector2Int> neighbors = new List<Vector2Int>();
 
-        // Loop through the 3x3 grid centered on (x, y)
-        for (int dx = -1; dx <= 1; dx++)
+        // Loop through the (2 * depth + 1) x (2 * depth + 1) grid centered on (x, y)
+        for (int dx = -depth; dx <= depth; dx++)
         {
-            for (int dy = -1; dy <= 1; dy++)
+            for (int dy = -depth; dy <= depth; dy++)
             {
+                int nx = x + dx;
+                int ny = y + dy;
+
                 // Skip the center tile itself
                 if (dx == 0 && dy == 0)
                     continue;
-
-                int nx = x + dx;
-                int ny = y + dy;
 
                 // Check if the neighbor is within the bounds of the map
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height)
@@ -348,6 +348,7 @@ public class MapGenerator : MonoBehaviour
 
         return neighbors;
     }
+
 
     //==========DOMAIN MANAGEMENT METHODS==========
     private List<int>[,] SaveDomains() //copies the new domain
@@ -378,6 +379,12 @@ public class MapGenerator : MonoBehaviour
     private bool isTileValidate(int x, int y, int domainchoice, int[,] mapToCheck)
     {
         List<Vector2Int> neighbors = GetNeighbors(x, y);
+        if (domainchoice == 0 || domainchoice == 2)
+        {
+            List<Vector2Int> waterNeighbors = GetNeighbors(x, y, 3);
+            foreach (Vector2Int neighbor in waterNeighbors) if (map[neighbor.x, neighbor.y] == 4) return false;
+        }
+
         foreach (Vector2Int neighbor in neighbors)
         {
             // Check constraints based on neighboring cells
