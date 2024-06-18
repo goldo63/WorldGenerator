@@ -458,7 +458,7 @@ public class MapGenerator : MonoBehaviour
                         }
                     }
 
-
+                    if (!isTileValidate(x, y, mostFrequentTile)) smoothedMap[x, y] = map[x, y];
                     // Assign the most frequent tile type to the current position
                     smoothedMap[x, y] = mostFrequentTile;
                 }
